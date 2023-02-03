@@ -2,136 +2,128 @@
 
 using namespace std;
 typedef long long ll;
-typedef double ld;
-#define MAX 5000000000000000000LL
-#define MIN -5000000000000000000LL
-
-struct mapD
-{
-	map<ll, ll> M;
-};
+typedef __int128 lll;
+typedef long double ld;
+typedef pair<ll, ll> pll;
+#define MAX 9223372036854775807LL
+#define MIN -9223372036854775807LL
+#define INF 0x3f3f3f3f3f3f3f3f
+#define fi first
+#define se second
+#define fastio ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL); cout << fixed; cout.precision(10);
+#define sp << " "
+#define en << "\n"
 
 ll n;
 ll a[100010];
-ll dep[100010], deg[100010];
-mapD nod[100010];
-vector<ll> vec[100010];
 ll all, bll;
-ll bun[100010];
-queue<ll> q;
-ll ans = MAX;
+vector<ll> vec[100010];
+ll R[100010];
+ll siz[100010];
+ll col[100010], cc;
+vector<ll> clr;
+ll dist[100010][3];
+ll ans = INF;
 
-void dfs0(ll here, ll pa)
+void dfs(ll here, ll pa)
 {
-	dep[here] = dep[pa] + 1;
+	siz[here] = 1;
 	
-	for(ll i = 0 ; i < vec[here].size() ; i++)
+	if(col[a[here]] != cc)
+		clr.push_back(a[here]);
+	
+	col[a[here]] = cc;
+	
+	for(auto &i : vec[here])
 	{
-		if(vec[here][i] == pa)
+		if(i == pa || R[i])
 			continue;
 		
-		dfs0(vec[here][i], here);
+		dfs(i, here);
+		siz[here] += siz[i];
+	}
+}
+
+ll get_cent(ll here, ll pa, ll Tsiz)
+{
+	for(auto &i : vec[here])
+	{
+		if(i == pa || R[i])
+			continue;
+		
+		if(siz[i] * 2 > Tsiz)
+			return get_cent(i, here, Tsiz);
+	}
+	
+	return here;
+}
+
+void dfs2(ll here, ll pa, ll dis)
+{
+	if(dist[a[here]][0] > dis)
+	{
+		dist[a[here]][1] = dist[a[here]][0];
+		dist[a[here]][0] = dis;
+	}
+	
+	else if(dist[a[here]][1] > dis)
+		dist[a[here]][1] = dis;
+	
+	for(auto &i : vec[here])
+	{
+		if(i == pa || R[i])
+			continue;
+		
+		dfs2(i, here, dis + 1);
+	}
+}
+
+void f(ll here)
+{
+	cc++;
+	clr.clear();
+	dfs(here, 0);
+	
+	for(auto &i : clr)
+		dist[i][0] = dist[i][1] = INF;
+	
+	ll rt = get_cent(here, 0, siz[here]);
+	
+	dfs2(rt, 0, 0);
+	
+	for(auto &i : clr)
+		ans = min(ans, dist[i][0] + dist[i][1]);
+	
+	R[rt] = 1;
+	
+	for(auto &i : vec[rt])
+	{
+		if(R[i])
+			continue;
+		
+		f(i);
 	}
 }
 
 int main(void)
 {
-	scanf("%lld", &n);
+	fastio
+	
+	cin >> n;
 	
 	for(ll i = 1 ; i <= n ; i++)
-	{
-		scanf("%lld", &a[i]);
-		bun[i] = i;
-	}
+		cin >> a[i];
 	
 	for(ll i = 1 ; i < n ; i++)
 	{
-		scanf("%lld %lld", &all, &bll);
+		cin >> all >> bll;
 		
 		vec[all].push_back(bll);
 		vec[bll].push_back(all);
 	}
 	
-	dfs0(1, 0);
+	f(1);
 	
-	for(ll i = 1 ; i <= n ; i++)
-	{
-		for(ll j : vec[i])
-		{
-			if(dep[i] < dep[j])
-				deg[i]++;
-		}
-	}
-	
-	for(ll i = 1 ; i <= n ; i++)
-	{
-		nod[i].M[a[i]] = dep[i];
-		
-		if(!deg[i])
-			q.push(i);
-	}
-	
-	while(!q.empty())
-	{
-		ll qq = q.front();
-		q.pop();
-		
-		for(ll i : vec[qq])
-		{
-			ll w1 = bun[qq];
-			ll w2 = bun[i];
-			
-			if(dep[qq] >= dep[i])
-				continue;
-			
-			if(nod[w1].M.size() >= nod[w2].M.size())
-			{
-				for(auto j : nod[w2].M)
-				{
-					if(nod[w1].M[j.first])
-					{
-						ans = min(ans, nod[w1].M[j.first] + j.second - 2 * dep[qq]);
-						nod[w1].M[j.first] = min(nod[w1].M[j.first], j.second);
-					}
-					
-					else
-						nod[w1].M[j.first] = j.second;
-				}
-				
-				nod[w2].M.clear();
-			}
-			
-			else
-			{
-				for(auto j : nod[w1].M)
-				{
-					if(nod[w2].M[j.first])
-					{
-						ans = min(ans, nod[w2].M[j.first] + j.second - 2 * dep[qq]);
-						nod[w2].M[j.first] = min(nod[w2].M[j.first], j.second);
-					}
-					
-					else
-						nod[w2].M[j.first] = j.second;
-				}
-				
-				bun[qq] = w2;
-				nod[w1].M.clear();
-			}
-		}
-		
-		for(ll i : vec[qq])
-		{
-			if(dep[qq] <= dep[i])
-				continue;
-			
-			deg[i]--;
-			
-			if(!deg[i])
-				q.push(i);
-		}
-	}
-	
-	printf("%lld", ans);
+	cout << ans;
 	return 0;
 }
