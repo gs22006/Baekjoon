@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-typedef long long ll;
+typedef int ll;
 
 ll num[2010][2010];
 vector<ll> vec[5000010], yuk[5000010];
