@@ -2,6 +2,7 @@
 #pragma GCC optimize("O3")
 #pragma GCC optimize("Ofast")
 #pragma GCC optimize("unroll-loops")
+#pragma GCC target("avx2")
 
 using namespace std;
 typedef int ll;
@@ -38,22 +39,16 @@ ll LCP[2000010], last;
 struct lazysegtree
 {
 	ll seg[8000010], lazy[8000010];
-	ll idx[8000010];
 	
 	void init(ll no, ll s, ll e)
 	{
 		seg[no] = lazy[no] = 0;
 		
 		if(s == e)
-		{
-			idx[no] = s;
 			return;
-		}
 		
 		init(no << 1, s, (s + e) >> 1);
 		init(no << 1 | 1, ((s + e) >> 1) + 1, e);
-		
-		idx[no] = min(idx[no << 1], idx[no << 1 | 1]);
 	}
 	
 	void prop(ll no, ll s, ll e)
@@ -93,16 +88,9 @@ struct lazysegtree
 		update(no << 1 | 1, ((s + e) >> 1) + 1, e, l, r, v);
 		
 		if(seg[no << 1] <= seg[no << 1 | 1])
-		{
 			seg[no] = seg[no << 1];
-			idx[no] = idx[no << 1];
-		}
-		
 		else
-		{
 			seg[no] = seg[no << 1 | 1];
-			idx[no] = idx[no << 1 | 1];
-		}
 	}
 	
 	ll query(ll no, ll s, ll e, ll l, ll r)
@@ -342,23 +330,21 @@ int main(void)
 			LCP[i] = last;
 		}
 		
-		vector<pll> qry;
+		ll ans = 0;
 		
 		for(ll i = 1 ; i < len ; ++i)
 		{
 			if(len - SA[i].num > m + 1 && len - SA[i + 1].num <= m)
-				qry.push_back({SA[i].num, SA[i].num + LCP[SA[i].num] - 1});
+			{
+				if(SA[i].num <= SA[i].num + LCP[SA[i].num] - 1)
+					ans = max(ans, solve(SA[i].num, SA[i].num + LCP[SA[i].num] - 1));
+			}
+			
 			else if(len - SA[i].num <= m && len - SA[i + 1].num > m + 1)
-				qry.push_back({SA[i + 1].num, SA[i + 1].num + LCP[SA[i].num] - 1});
-		}
-		
-		ll ans = 0;
-		ll siz = (ll)qry.size();
-		
-		for(ll i = 0 ; i < siz ; ++i)
-		{
-			if(qry[i].fi <= qry[i].se)
-				ans = max(ans, solve(qry[i].fi, qry[i].se));
+			{
+				if(SA[i + 1].num <= SA[i + 1].num + LCP[SA[i].num] - 1)
+					ans = max(ans, solve(SA[i + 1].num, SA[i + 1].num + LCP[SA[i].num] - 1));
+			}
 		}
 		
 		cout << ans en;
