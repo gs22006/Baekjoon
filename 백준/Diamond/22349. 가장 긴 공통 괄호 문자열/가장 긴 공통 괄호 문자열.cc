@@ -29,7 +29,6 @@ ll SISIZ;
 ll t;
 char a[2000010], b[2000010];
 ll n, m;
-char s[2000010];
 ll len;
 ll grp[2000010], tmp[2000010];
 help SA[2000010];
@@ -239,21 +238,18 @@ int main(void)
 				segt.update(1, 0, n - 1, i, n - 1, -1);
 		}
 		
-		len = 0;
+		len = n;
 		
-		for(ll i = 0 ; i < n ; ++i)
-			s[len++] = a[i];
-		
-		s[len++] = '$';
+		a[len++] = '$';
 		
 		for(ll i = 0 ; i < m ; ++i)
-			s[len++] = b[i];
+			a[len++] = b[i];
 		
 		SISIZ = len + 2;
 		
 		for(ll i = 0 ; i < len ; ++i)
 		{
-			grp[i] = s[i] - '$' + 1;
+			grp[i] = a[i] - '$' + 1;
 			SISIZ = max(SISIZ, grp[i] + 1);
 			LCP[i] = 0;
 		}
@@ -313,7 +309,7 @@ int main(void)
 				if(bun1 + j >= len || bun2 + j >= len)
 					break;
 				
-				if(s[bun1 + j] == s[bun2 + j])
+				if(a[bun1 + j] == a[bun2 + j])
 					last++;
 				else
 					break;
