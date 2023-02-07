@@ -147,10 +147,10 @@ ll solve(ll X, ll Y)
 		gap = segt.query(1, 0, n - 1, X - 1, X - 1);
 	
 	if(0 <= X - 1)
-		segt.update(1, 0, n - 1, 0, X - 1, 987654321);
+		segt.update(1, 0, n - 1, 0, X - 1, 17654321);
 	
 	if(Y + 1 <= n - 1)
-		segt.update(1, 0, n - 1, Y + 1, n - 1, 987654321);
+		segt.update(1, 0, n - 1, Y + 1, n - 1, 17654321);
 	
 	ll w = Y + 1;
 	
@@ -160,7 +160,7 @@ ll solve(ll X, ll Y)
 	--w;
 	
 	if(w + 1 <= Y)
-		segt.update(1, 0, n - 1, w + 1, Y, 987654321);
+		segt.update(1, 0, n - 1, w + 1, Y, 17654321);
 	
 	ll ret = -1;
 	
@@ -168,13 +168,13 @@ ll solve(ll X, ll Y)
 		ret = max(ret, segt.query3(1, 0, n - 1, gap) - X + 1);
 	
 	if(0 <= X - 1)
-		segt.update(1, 0, n - 1, 0, X - 1, -987654321);
+		segt.update(1, 0, n - 1, 0, X - 1, -17654321);
 	
 	if(Y + 1 <= n - 1)
-		segt.update(1, 0, n - 1, Y + 1, n - 1, -987654321);
+		segt.update(1, 0, n - 1, Y + 1, n - 1, -17654321);
 	
 	if(w + 1 <= Y)
-		segt.update(1, 0, n - 1, w + 1, Y, -987654321);
+		segt.update(1, 0, n - 1, w + 1, Y, -17654321);
 	
 	return ret;
 }
