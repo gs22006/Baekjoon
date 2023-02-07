@@ -1,4 +1,7 @@
 #include <bits/stdc++.h>
+#pragma GCC optimize("O3")
+#pragma GCC optimize("Ofast")
+#pragma GCC optimize("unroll-loops")
 
 using namespace std;
 typedef int ll;
@@ -21,20 +24,21 @@ struct help
 };
 
 ll SISIZ;
+
 ll t;
-char a[500010], b[500010];
+char a[2000010], b[2000010];
 ll n, m;
-char s[1000010];
+char s[2000010];
 ll len;
-ll grp[1000010], tmp[1000010];
-help SA[1000010];
+ll grp[2000010], tmp[2000010];
+help SA[2000010];
 ll twoo;
-ll LCP[1000010], last;
+ll LCP[2000010], last;
 
 struct lazysegtree
 {
-	ll seg[4000010], lazy[4000010];
-	ll idx[4000010];
+	ll seg[8000010], lazy[8000010];
+	ll idx[8000010];
 	
 	void init(ll no, ll s, ll e)
 	{
@@ -165,7 +169,7 @@ ll solve(ll X, ll Y)
 	if(segt.query(1, 0, n - 1, X, Y) < gap)
 		w = segt.query2(1, 0, n - 1, gap);
 	
-	w--;
+	--w;
 	
 	if(w + 1 <= Y)
 		segt.update(1, 0, n - 1, w + 1, Y, 987654321);
@@ -190,39 +194,39 @@ ll solve(ll X, ll Y)
 	return ret;
 }
 
-help tmp2[4000010];
-ll rdx[4000010];
+help tmp2[8000010];
+ll rdx[8000010];
 
 void do_sort(void)
 {
-	for(ll i = 0 ; i <= SISIZ ; i++)
+	for(ll i = 0 ; i <= SISIZ ; ++i)
 		rdx[i] = 0;
 	
-	for(ll i = 0 ; i < len ; i++)
+	for(ll i = 0 ; i < len ; ++i)
 		rdx[SA[i].Y]++;
 	
-	for(ll i = 1 ; i <= SISIZ ; i++)
+	for(ll i = 1 ; i <= SISIZ ; ++i)
 		rdx[i] += rdx[i - 1];
 	
-	for(ll i = len - 1 ; i >= 0 ; i--)
+	for(ll i = len - 1 ; i >= 0 ; --i)
 		tmp2[rdx[SA[i].Y]--] = SA[i];
 	
-	for(ll i = 0 ; i < len ; i++)
+	for(ll i = 0 ; i < len ; ++i)
 		SA[i] = tmp2[i + 1];
 	
-	for(ll i = 0 ; i <= SISIZ ; i++)
+	for(ll i = 0 ; i <= SISIZ ; ++i)
 		rdx[i] = 0;
 	
-	for(ll i = 0 ; i < len ; i++)
+	for(ll i = 0 ; i < len ; ++i)
 		rdx[SA[i].X]++;
 	
-	for(ll i = 1 ; i <= SISIZ ; i++)
+	for(ll i = 1 ; i <= SISIZ ; ++i)
 		rdx[i] += rdx[i - 1];
 	
-	for(ll i = len - 1 ; i >= 0 ; i--)
+	for(ll i = len - 1 ; i >= 0 ; --i)
 		tmp2[rdx[SA[i].X]--] = SA[i];
 	
-	for(ll i = 0 ; i < len ; i++)
+	for(ll i = 0 ; i < len ; ++i)
 		SA[i] = tmp2[i + 1];
 }
 
@@ -241,7 +245,7 @@ int main(void)
 		
 		segt.init(1, 0, n - 1);
 		
-		for(ll i = 0 ; i < n ; i++)
+		for(ll i = 0 ; i < n ; ++i)
 		{
 			if(a[i] == '(')
 				segt.update(1, 0, n - 1, i, n - 1, 1);
@@ -251,33 +255,36 @@ int main(void)
 		
 		len = 0;
 		
-		for(ll i = 0 ; i < n ; i++)
+		for(ll i = 0 ; i < n ; ++i)
 			s[len++] = a[i];
 		
 		s[len++] = '$';
 		
-		for(ll i = 0 ; i < m ; i++)
+		for(ll i = 0 ; i < m ; ++i)
 			s[len++] = b[i];
 		
-		SISIZ = len * 2;
+		SISIZ = len + 5;
 		
-		for(ll i = 0 ; i < len ; i++)
+		for(ll i = 0 ; i < len ; ++i)
 		{
 			grp[i] = s[i] + 1;
-			SISIZ = max(SISIZ, grp[i] + len);
+			
+			SISIZ = max(SISIZ, grp[i] + 1);
+			
+			SA[i].num = i;
 			LCP[i] = 0;
 		}
 		
 		for(twoo = 1 ; ; twoo <<= 1)
 		{
-			for(ll i = 0 ; i < len ; i++)
+			for(ll i = 0 ; i < len ; ++i)
 			{
-				SA[i].X = grp[i];
+				SA[i].X = grp[i] + 1;
 				
 				if(i + twoo >= len)
-					SA[i].Y = -1 + len;
+					SA[i].Y = 0;
 				else
-					SA[i].Y = grp[i + twoo] + len;
+					SA[i].Y = grp[i + twoo] + 1;
 				
 				SA[i].num = i;
 			}
@@ -288,7 +295,7 @@ int main(void)
 			
 			tmp[SA[0].num] = 0;
 			
-			for(ll i = 1 ; i < len ; i++)
+			for(ll i = 1 ; i < len ; ++i)
 			{
 				if(SA[i].X != SA[i - 1].X || SA[i].Y != SA[i - 1].Y)
 					cc++;
@@ -296,7 +303,7 @@ int main(void)
 				tmp[SA[i].num] = cc;
 			}
 			
-			for(ll i = 0 ; i < len ; i++)
+			for(ll i = 0 ; i < len ; ++i)
 				grp[i] = tmp[i];
 			
 			if(cc == len - 1)
@@ -305,10 +312,10 @@ int main(void)
 		
 		last = 0;
 		
-		for(ll i = 0 ; i < len ; i++)
+		for(ll i = 0 ; i < len ; ++i)
 			tmp[SA[i].num] = i;
 		
-		for(ll i = 0 ; i < len ; i++, last = max(0, last - 1))
+		for(ll i = 0 ; i < len ; ++i, last = max(0, last - 1))
 		{
 			ll bun1 = i;
 			ll bun2 = 0;
@@ -321,7 +328,7 @@ int main(void)
 			
 			bun2 = SA[tmp[i] + 1].num;
 			
-			for(ll j = last ; ; j++)
+			for(ll j = last ; ; ++j)
 			{
 				if(bun1 + j >= len || bun2 + j >= len)
 					break;
@@ -337,7 +344,7 @@ int main(void)
 		
 		vector<pll> qry;
 		
-		for(ll i = 1 ; i < len ; i++)
+		for(ll i = 1 ; i < len ; ++i)
 		{
 			if(len - SA[i].num > m + 1 && len - SA[i + 1].num <= m)
 				qry.push_back({SA[i].num, SA[i].num + LCP[SA[i].num] - 1});
@@ -348,7 +355,7 @@ int main(void)
 		ll ans = 0;
 		ll siz = (ll)qry.size();
 		
-		for(ll i = 0 ; i < siz ; i++)
+		for(ll i = 0 ; i < siz ; ++i)
 		{
 			if(qry[i].fi <= qry[i].se)
 				ans = max(ans, solve(qry[i].fi, qry[i].se));
