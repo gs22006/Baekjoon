@@ -35,6 +35,7 @@ ll grp[2000010], tmp[2000010];
 help SA[2000010];
 ll twoo;
 ll LCP[2000010], last;
+ll bun1, bun2;
 
 struct lazysegtree
 {
@@ -252,11 +253,8 @@ int main(void)
 		
 		for(ll i = 0 ; i < len ; ++i)
 		{
-			grp[i] = s[i] + 1;
-			
+			grp[i] = s[i] - '$' + 1;
 			SISIZ = max(SISIZ, grp[i] + 1);
-			
-			SA[i].num = i;
 			LCP[i] = 0;
 		}
 		
@@ -278,18 +276,15 @@ int main(void)
 			
 			ll cc = 0;
 			
-			tmp[SA[0].num] = 0;
+			grp[SA[0].num] = 0;
 			
 			for(ll i = 1 ; i < len ; ++i)
 			{
 				if(SA[i].X != SA[i - 1].X || SA[i].Y != SA[i - 1].Y)
 					cc++;
 				
-				tmp[SA[i].num] = cc;
+				grp[SA[i].num] = cc;
 			}
-			
-			for(ll i = 0 ; i < len ; ++i)
-				grp[i] = tmp[i];
 			
 			if(cc == len - 1)
 				break;
@@ -302,8 +297,8 @@ int main(void)
 		
 		for(ll i = 0 ; i < len ; ++i, last = max(0, last - 1))
 		{
-			ll bun1 = i;
-			ll bun2 = 0;
+			bun1 = i;
+			bun2 = 0;
 			
 			if(tmp[i] == len - 1)
 			{
