@@ -15,12 +15,19 @@ typedef pair<ll, ll> pll;
 #define en << "\n"
 #define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
+struct help
+{
+	ll X, Y, num;
+};
+
+ll SISIZ;
 ll t;
 char a[500010], b[500010];
 ll n, m;
 char s[1000010];
 ll len;
-ll SA[1000010], grp[1000010], tmp[1000010];
+ll grp[1000010], tmp[1000010];
+help SA[1000010];
 ll twoo;
 ll LCP[1000010], last;
 
@@ -183,18 +190,40 @@ ll solve(ll X, ll Y)
 	return ret;
 }
 
-bool cmp(ll X, ll Y)
+help tmp2[4000010];
+ll rdx[4000010];
+
+void do_sort(void)
 {
-	if(grp[X] != grp[Y])
-		return grp[X] < grp[Y];
+	for(ll i = 0 ; i <= SISIZ ; i++)
+		rdx[i] = 0;
 	
-	X += twoo;
-	Y += twoo;
+	for(ll i = 0 ; i < len ; i++)
+		rdx[SA[i].Y]++;
 	
-	if(X >= len || Y >= len)
-		return X > Y;
+	for(ll i = 1 ; i <= SISIZ ; i++)
+		rdx[i] += rdx[i - 1];
 	
-	return grp[X] < grp[Y];
+	for(ll i = len - 1 ; i >= 0 ; i--)
+		tmp2[rdx[SA[i].Y]--] = SA[i];
+	
+	for(ll i = 0 ; i < len ; i++)
+		SA[i] = tmp2[i + 1];
+	
+	for(ll i = 0 ; i <= SISIZ ; i++)
+		rdx[i] = 0;
+	
+	for(ll i = 0 ; i < len ; i++)
+		rdx[SA[i].X]++;
+	
+	for(ll i = 1 ; i <= SISIZ ; i++)
+		rdx[i] += rdx[i - 1];
+	
+	for(ll i = len - 1 ; i >= 0 ; i--)
+		tmp2[rdx[SA[i].X]--] = SA[i];
+	
+	for(ll i = 0 ; i < len ; i++)
+		SA[i] = tmp2[i + 1];
 }
 
 int main(void)
@@ -230,27 +259,41 @@ int main(void)
 		for(ll i = 0 ; i < m ; i++)
 			s[len++] = b[i];
 		
+		SISIZ = len * 2;
+		
 		for(ll i = 0 ; i < len ; i++)
 		{
-			grp[i] = s[i];
-			SA[i] = i;
+			grp[i] = s[i] + 1;
+			SISIZ = max(SISIZ, grp[i] + len);
 			LCP[i] = 0;
 		}
 		
 		for(twoo = 1 ; ; twoo <<= 1)
 		{
-			sort(SA, SA + len, cmp);
+			for(ll i = 0 ; i < len ; i++)
+			{
+				SA[i].X = grp[i];
+				
+				if(i + twoo >= len)
+					SA[i].Y = -1 + len;
+				else
+					SA[i].Y = grp[i + twoo] + len;
+				
+				SA[i].num = i;
+			}
+			
+			do_sort();
 			
 			ll cc = 0;
 			
-			tmp[SA[0]] = 0;
+			tmp[SA[0].num] = 0;
 			
 			for(ll i = 1 ; i < len ; i++)
 			{
-				if(cmp(SA[i - 1], SA[i]))
+				if(SA[i].X != SA[i - 1].X || SA[i].Y != SA[i - 1].Y)
 					cc++;
 				
-				tmp[SA[i]] = cc;
+				tmp[SA[i].num] = cc;
 			}
 			
 			for(ll i = 0 ; i < len ; i++)
@@ -263,7 +306,7 @@ int main(void)
 		last = 0;
 		
 		for(ll i = 0 ; i < len ; i++)
-			tmp[SA[i]] = i;
+			tmp[SA[i].num] = i;
 		
 		for(ll i = 0 ; i < len ; i++, last = max(0, last - 1))
 		{
@@ -276,7 +319,7 @@ int main(void)
 				continue;
 			}
 			
-			bun2 = SA[tmp[i] + 1];
+			bun2 = SA[tmp[i] + 1].num;
 			
 			for(ll j = last ; ; j++)
 			{
@@ -296,10 +339,10 @@ int main(void)
 		
 		for(ll i = 1 ; i < len ; i++)
 		{
-			if(len - SA[i] > m + 1 && len - SA[i + 1] <= m)
-				qry.push_back({SA[i], SA[i] + LCP[SA[i]] - 1});
-			else if(len - SA[i] <= m && len - SA[i + 1] > m + 1)
-				qry.push_back({SA[i + 1], SA[i + 1] + LCP[SA[i]] - 1});
+			if(len - SA[i].num > m + 1 && len - SA[i + 1].num <= m)
+				qry.push_back({SA[i].num, SA[i].num + LCP[SA[i].num] - 1});
+			else if(len - SA[i].num <= m && len - SA[i + 1].num > m + 1)
+				qry.push_back({SA[i + 1].num, SA[i + 1].num + LCP[SA[i].num] - 1});
 		}
 		
 		ll ans = 0;
