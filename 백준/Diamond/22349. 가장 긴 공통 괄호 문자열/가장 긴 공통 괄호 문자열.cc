@@ -162,9 +162,6 @@ ll solve(ll X, ll Y)
 	if(w + 1 <= Y)
 		segt.update(1, 0, n - 1, w + 1, Y, 987654321);
 	
-	if(segt.query(1, 0, n - 1, X, w) < gap)
-		assert(0);
-	
 	ll ret = -1;
 	
 	if(segt.query(1, 0, n - 1, X, w) == gap)
@@ -251,7 +248,7 @@ int main(void)
 		for(ll i = 0 ; i < m ; ++i)
 			s[len++] = b[i];
 		
-		SISIZ = len + 5;
+		SISIZ = len + 2;
 		
 		for(ll i = 0 ; i < len ; ++i)
 		{
