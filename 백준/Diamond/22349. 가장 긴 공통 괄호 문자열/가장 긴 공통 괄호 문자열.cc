@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-typedef long long ll;
+typedef int ll;
 typedef __int128 lll;
 typedef long double ld;
 typedef pair<ll, ll> pll;
@@ -18,20 +18,31 @@ typedef pair<ll, ll> pll;
 ll t;
 char a[500010], b[500010];
 ll n, m;
+char s[1000010];
+ll len;
+ll SA[1000010], grp[1000010], tmp[1000010];
+ll twoo;
+ll LCP[1000010], last;
 
 struct lazysegtree
 {
-	ll seg[2000010], lazy[2000010];
+	ll seg[4000010], lazy[4000010];
+	ll idx[4000010];
 	
 	void init(ll no, ll s, ll e)
 	{
 		seg[no] = lazy[no] = 0;
 		
 		if(s == e)
+		{
+			idx[no] = s;
 			return;
+		}
 		
-		init(no * 2, s, (s + e) / 2);
-		init(no * 2 + 1, (s + e) / 2 + 1, e);
+		init(no << 1, s, (s + e) >> 1);
+		init(no << 1 | 1, ((s + e) >> 1) + 1, e);
+		
+		idx[no] = min(idx[no << 1], idx[no << 1 | 1]);
 	}
 	
 	void prop(ll no, ll s, ll e)
@@ -40,8 +51,8 @@ struct lazysegtree
 		
 		if(s != e)
 		{
-			lazy[no * 2] += lazy[no];
-			lazy[no * 2 + 1] += lazy[no];
+			lazy[no << 1] += lazy[no];
+			lazy[no << 1 | 1] += lazy[no];
 		}
 		
 		lazy[no] = 0;
@@ -60,71 +71,130 @@ struct lazysegtree
 			
 			if(s != e)
 			{
-				lazy[no * 2] += v;
-				lazy[no * 2 + 1] += v;
+				lazy[no << 1] += v;
+				lazy[no << 1 | 1] += v;
 			}
 			
 			return;
 		}
 		
-		update(no * 2, s, (s + e) / 2, l, r, v);
-		update(no * 2 + 1, (s + e) / 2 + 1, e, l, r, v);
+		update(no << 1, s, (s + e) >> 1, l, r, v);
+		update(no << 1 | 1, ((s + e) >> 1) + 1, e, l, r, v);
 		
-		seg[no] = min(seg[no * 2], seg[no * 2 + 1]);
+		if(seg[no << 1] <= seg[no << 1 | 1])
+		{
+			seg[no] = seg[no << 1];
+			idx[no] = idx[no << 1];
+		}
+		
+		else
+		{
+			seg[no] = seg[no << 1 | 1];
+			idx[no] = idx[no << 1 | 1];
+		}
 	}
 	
-	ll query(ll no, ll s, ll e)
-	{
-		prop(no, s, e);
-		
-		if(s == e)
-			return s;
-		
-		prop(no * 2, s, (s + e) / 2);
-		prop(no * 2 + 1, (s + e) / 2 + 1, e);
-		
-		if(seg[no * 2] < 0)
-			return query(no * 2, s, (s + e) / 2);
-		
-		return query(no * 2 + 1, (s + e) / 2 + 1, e);
-	}
-	
-	ll query2(ll no, ll s, ll e, ll l, ll r)
+	ll query(ll no, ll s, ll e, ll l, ll r)
 	{
 		prop(no, s, e);
 		
 		if(e < l || r < s)
-			return MAX;
+			return 987654321;
 		
 		if(l <= s && e <= r)
 			return seg[no];
 		
-		return min(query2(no * 2, s, (s + e) / 2, l, r), query2(no * 2 + 1, (s + e) / 2 + 1, e, l, r));
+		return min(query(no << 1, s, (s + e) >> 1, l, r), query(no << 1 | 1, ((s + e) >> 1) + 1, e, l, r));
 	}
 	
-	ll query3(ll no, ll s, ll e)
+	ll query2(ll no, ll s, ll e, ll v)
 	{
 		prop(no, s, e);
 		
 		if(s == e)
 			return s;
 		
-		prop(no * 2, s, (s + e) / 2);
-		prop(no * 2 + 1, (s + e) / 2 + 1, e);
+		prop(no << 1, s, (s + e) >> 1);
+		prop(no << 1 | 1, (s + e) >> 1 + 1, e);
 		
-		if(seg[no * 2 + 1] == 0)
-			return query3(no * 2 + 1, (s + e) / 2 + 1, e);
+		if(seg[no << 1] < v)
+			return query2(no << 1, s, (s + e) >> 1, v);
 		
-		return query3(no * 2, s, (s + e) / 2);
+		return query2(no << 1 | 1, ((s + e) >> 1) + 1, e, v);
+	}
+	
+	ll query3(ll no, ll s, ll e, ll v)
+	{
+		prop(no, s, e);
+		
+		if(s == e)
+			return s;
+		
+		prop(no << 1, s, (s + e) >> 1);
+		prop(no << 1 | 1, (s + e) >> 1 + 1, e);
+		
+		if(seg[no << 1 | 1] == v)
+			return query3(no << 1 | 1, ((s + e) >> 1) + 1, e, v);
+		
+		return query3(no << 1, s, (s + e) >> 1, v);
 	}
 }segt;
 
-void opr(ll X)
+ll solve(ll X, ll Y)
 {
-	if(a[X] == '(')
-		segt.update(1, 0, n - 1, X, n - 1, -1);
-	else
-		segt.update(1, 0, n - 1, X, n - 1, 1);
+	ll gap = 0;
+	
+	if(X)
+		gap = segt.query(1, 0, n - 1, X - 1, X - 1);
+	
+	if(0 <= X - 1)
+		segt.update(1, 0, n - 1, 0, X - 1, 987654321);
+	
+	if(Y + 1 <= n - 1)
+		segt.update(1, 0, n - 1, Y + 1, n - 1, 987654321);
+	
+	ll w = Y + 1;
+	
+	if(segt.query(1, 0, n - 1, X, Y) < gap)
+		w = segt.query2(1, 0, n - 1, gap);
+	
+	w--;
+	
+	if(w + 1 <= Y)
+		segt.update(1, 0, n - 1, w + 1, Y, 987654321);
+	
+	if(segt.query(1, 0, n - 1, X, w) < gap)
+		assert(0);
+	
+	ll ret = -1;
+	
+	if(segt.query(1, 0, n - 1, X, w) == gap)
+		ret = max(ret, segt.query3(1, 0, n - 1, gap) - X + 1);
+	
+	if(0 <= X - 1)
+		segt.update(1, 0, n - 1, 0, X - 1, -987654321);
+	
+	if(Y + 1 <= n - 1)
+		segt.update(1, 0, n - 1, Y + 1, n - 1, -987654321);
+	
+	if(w + 1 <= Y)
+		segt.update(1, 0, n - 1, w + 1, Y, -987654321);
+	
+	return ret;
+}
+
+bool cmp(ll X, ll Y)
+{
+	if(grp[X] != grp[Y])
+		return grp[X] < grp[Y];
+	
+	X += twoo;
+	Y += twoo;
+	
+	if(X >= len || Y >= len)
+		return X > Y;
+	
+	return grp[X] < grp[Y];
 }
 
 int main(void)
@@ -150,41 +220,95 @@ int main(void)
 				segt.update(1, 0, n - 1, i, n - 1, -1);
 		}
 		
-		ll ans = 0;
+		len = 0;
 		
 		for(ll i = 0 ; i < n ; i++)
+			s[len++] = a[i];
+		
+		s[len++] = '$';
+		
+		for(ll i = 0 ; i < m ; i++)
+			s[len++] = b[i];
+		
+		for(ll i = 0 ; i < len ; i++)
 		{
-			if(segt.query2(1, 0, n - 1, i, i) <= 0)
+			grp[i] = s[i];
+			SA[i] = i;
+			LCP[i] = 0;
+		}
+		
+		for(twoo = 1 ; ; twoo <<= 1)
+		{
+			sort(SA, SA + len, cmp);
+			
+			ll cc = 0;
+			
+			tmp[SA[0]] = 0;
+			
+			for(ll i = 1 ; i < len ; i++)
 			{
-				opr(i);
+				if(cmp(SA[i - 1], SA[i]))
+					cc++;
+				
+				tmp[SA[i]] = cc;
+			}
+			
+			for(ll i = 0 ; i < len ; i++)
+				grp[i] = tmp[i];
+			
+			if(cc == len - 1)
+				break;
+		}
+		
+		last = 0;
+		
+		for(ll i = 0 ; i < len ; i++)
+			tmp[SA[i]] = i;
+		
+		for(ll i = 0 ; i < len ; i++, last = max(0, last - 1))
+		{
+			ll bun1 = i;
+			ll bun2 = 0;
+			
+			if(tmp[i] == len - 1)
+			{
+				LCP[i] = -1;
 				continue;
 			}
 			
-			if(segt.query2(1, 0, n - 1, i, n - 1) > 0)
+			bun2 = SA[tmp[i] + 1];
+			
+			for(ll j = last ; ; j++)
 			{
-				opr(i);
-				continue;
+				if(bun1 + j >= len || bun2 + j >= len)
+					break;
+				
+				if(s[bun1 + j] == s[bun2 + j])
+					last++;
+				else
+					break;
 			}
 			
-			if(segt.query2(1, 0, n - 1, i, n - 1) >= 0)
-			{
-				ll w = segt.query3(1, 0, n - 1);
-				ans = max(ans, w - i + 1);
-				opr(i);
-				continue;
-			}
-			
-			if(segt.query2(1, 0, n - 1, i, n - 1) >= 0 && segt.query2(1, 0, n - 1, n - 1, n - 1) == 0)
-			{
-				ans = max(ans, n - i);
-				opr(i);
-				continue;
-			}
-			
-			ll w = segt.query(1, 0, n - 1);
-			
-			ans = max(ans, w - i);
-			opr(i);
+			LCP[i] = last;
+		}
+		
+		vector<pll> qry;
+		
+		for(ll i = 1 ; i < len ; i++)
+		{
+			if(len - SA[i] > m + 1 && len - SA[i + 1] <= m)
+				qry.push_back({SA[i], SA[i] + LCP[SA[i]] - 1});
+			else if(len - SA[i] <= m && len - SA[i + 1] > m + 1)
+				qry.push_back({SA[i + 1], SA[i + 1] + LCP[SA[i]] - 1});
+		}
+		
+		ll ans = 0;
+		ll siz = (ll)qry.size();
+		
+		for(ll i = 0 ; i < siz ; i++)
+		{
+			if(qry[i].fi <= qry[i].se)
+				ans = max(ans, solve(qry[i].fi, qry[i].se));
 		}
 		
 		cout << ans en;
