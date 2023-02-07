@@ -27,7 +27,7 @@ struct help
 ll SISIZ;
 
 ll t;
-char a[2000010], b[2000010];
+string a, b;
 ll n, m;
 ll len;
 ll grp[2000010], tmp[2000010];
@@ -127,7 +127,12 @@ struct lazysegtree
 		prop(no, s, e);
 		
 		if(s == e)
+		{
+			if(seg[no] != v)
+				return -17654321;
+			
 			return s;
+		}
 		
 		prop(no << 1, s, (s + e) >> 1);
 		prop(no << 1 | 1, (s + e) >> 1 + 1, e);
@@ -163,9 +168,7 @@ ll solve(ll X, ll Y)
 		segt.update(1, 0, n - 1, w + 1, Y, 17654321);
 	
 	ll ret = -1;
-	
-	if(segt.query(1, 0, n - 1, X, w) == gap)
-		ret = max(ret, segt.query3(1, 0, n - 1, gap) - X + 1);
+	ret = max(ret, segt.query3(1, 0, n - 1, gap) - X + 1);
 	
 	if(0 <= X - 1)
 		segt.update(1, 0, n - 1, 0, X - 1, -17654321);
@@ -225,8 +228,8 @@ int main(void)
 	{
 		cin >> a >> b;
 		
-		n = strlen(a);
-		m = strlen(b);
+		n = a.length();
+		m = b.length();
 		
 		segt.init(1, 0, n - 1);
 		
@@ -240,12 +243,12 @@ int main(void)
 		
 		len = n;
 		
-		a[len++] = '$';
+		a.push_back('$');
+		a += b;
 		
-		for(ll i = 0 ; i < m ; ++i)
-			a[len++] = b[i];
+		len = a.length();
 		
-		SISIZ = len + 2;
+		SISIZ = len + 1;
 		
 		for(ll i = 0 ; i < len ; ++i)
 		{
@@ -277,7 +280,7 @@ int main(void)
 			for(ll i = 1 ; i < len ; ++i)
 			{
 				if(SA[i].X != SA[i - 1].X || SA[i].Y != SA[i - 1].Y)
-					cc++;
+					++cc;
 				
 				grp[SA[i].num] = cc;
 			}
