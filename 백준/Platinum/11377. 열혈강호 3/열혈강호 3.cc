@@ -17,26 +17,110 @@ typedef pair<ll, ll> pll;
 
 ll n, m, K;
 ll all, bll;
-vector<ll> vec[2010];
-ll ltr[2010], rtl[2010], chk[2010];
-ll ans, ans2;
 
-ll dfs(ll here)
+struct Dinic
 {
-	chk[here] = 1;
+	ll Vtx;
+	ll flow[3010][3010];
+	ll capa[3010][3010];
+	vector<ll> adj[3010];
+	ll work[3010], level[3010];
+	ll Srce, Snk;
 	
-	for(auto &i : vec[here])
+	void init(ll U, ll V, ll W)
 	{
-		if(rtl[i] == -1 || (!chk[rtl[i]] && dfs(rtl[i])))
-		{
-			ltr[here] = i;
-			rtl[i] = here;
-			return 1;
-		}
+		Vtx = U;
+		Srce = V;
+		Snk = W;
 	}
 	
-	return 0;
-}
+	void add_edge(ll U, ll V, ll W, ll DIR)
+	{
+		adj[U].push_back(V);
+		adj[V].push_back(U);
+		capa[U][V] += W;
+		
+		if(!DIR)
+			capa[V][U] += W;
+	}
+	
+	ll BFS(void)
+	{
+		for(ll i = 1 ; i <= Vtx ; i++)
+			level[i] = -1;
+		
+		queue<ll> QQ;
+		
+		QQ.push(Srce);
+		level[Srce] = 0;
+		
+		while(!QQ.empty())
+		{
+			ll qqqq = QQ.front();
+			QQ.pop();
+			
+			for(auto &i : adj[qqqq])
+			{
+				if(level[i] == -1 && (capa[qqqq][i] - flow[qqqq][i]) > 0)
+				{
+					QQ.push(i);
+					level[i] = level[qqqq] + 1;
+				}
+			}
+		}
+		
+		return level[Snk] != -1;
+	}
+	
+	ll DFS(ll here, ll minini)
+	{
+		if(here == Snk)
+			return minini;
+		
+		for(ll &i = work[here] ; i < (ll)adj[here].size() ; i++)
+		{
+			ll nxt = adj[here][i];
+			
+			if(level[nxt] == level[here] + 1 && (capa[here][nxt] - flow[here][nxt]) > 0)
+			{
+				ll GAP = DFS(nxt, min(minini, capa[here][nxt] - flow[here][nxt]));
+				
+				if(GAP > 0)
+				{
+					flow[here][nxt] += GAP;
+					flow[nxt][here] -= GAP;
+					
+					return GAP;
+				}
+			}
+		}
+		
+		return 0;
+	}
+	
+	ll max_flow(void)
+	{
+		ll ret = 0;
+		
+		while(BFS())
+		{
+			for(ll i = 1 ; i <= Vtx ; i++)
+				work[i] = 0;
+			
+			while(1)
+			{
+				ll FLOW = DFS(Srce, INF);
+				
+				if(!FLOW)
+					break;
+				
+				ret += FLOW;
+			}
+		}
+		
+		return ret;
+	}
+}mxfl;
 
 int main(void)
 {
@@ -46,37 +130,26 @@ int main(void)
 	
 	for(ll i = 1 ; i <= n ; i++)
 	{
+		mxfl.add_edge(n + m + 1, i, 1, 1);
+		
 		cin >> all;
 		
 		while(all--)
 		{
 			cin >> bll;
-			
-			vec[i].push_back(bll);
-			vec[i + n].push_back(bll);
+			mxfl.add_edge(i, bll + n, 1, 1);
 		}
 	}
-	
-	for(ll i = 1 ; i <= n * 2 ; i++)
-		ltr[i] = -1;
 	
 	for(ll i = 1 ; i <= m ; i++)
-		rtl[i] = -1;
+		mxfl.add_edge(i + n, n + m + 2, 1, 1);
 	
-	for(ll i = 1 ; i <= n * 2 ; i++)
-	{
-		if(ltr[i] == -1)
-		{
-			for(ll j = 1 ; j <= n * 2 ; j++)
-				chk[j] = 0;
-			
-			ans += dfs(i);
-		}
-		
-		if(i == n)
-			ans2 = ans, ans = 0;
-	}
+	for(ll i = 1 ; i <= n ; i++)
+		mxfl.add_edge(n + m + 3, i, 1, 1);
 	
-	cout << ans2 + min(ans, K);
+	mxfl.add_edge(n + m + 1, n + m + 3, K, 1);
+	mxfl.init(n + m + 3, n + m + 1, n + m + 2);
+	
+	cout << mxfl.max_flow();
 	return 0;
 }
