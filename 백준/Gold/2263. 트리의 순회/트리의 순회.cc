@@ -2,81 +2,53 @@
 
 using namespace std;
 typedef long long ll;
-typedef double ld;
+typedef __int128 lll;
+typedef long double ld;
+typedef pair<ll, ll> pll;
+typedef pair<ld, ld> pld;
 #define MAX 9223372036854775807LL
 #define MIN -9223372036854775807LL
+#define INF 0x3f3f3f3f3f3f3f3f
+#define fi first
+#define se second
+#define fastio ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL); cout << fixed; cout.precision(10);
+#define sp << " "
+#define en << "\n"
+#define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
 ll n;
 ll a[100010], b[100010];
 ll w[100010];
-ll yuk[100010];
 
-struct maxsegtree
+void f(ll s1, ll e1, ll s2, ll e2)
 {
-	ll seg[500010];
-	
-	void update(ll no, ll s, ll e, ll w, ll v)
-	{
-		if(w < s || e < w)
-			return;
-		
-		if(s == e)
-		{
-			seg[no] = v;
-			return;
-		}
-		
-		update(no * 2, s, (s + e) / 2, w, v);
-		update(no * 2 + 1, (s + e) / 2 + 1, e, w, v);
-		
-		seg[no] = max(seg[no * 2], seg[no * 2 + 1]);
-	}
-	
-	ll query(ll no, ll s, ll e, ll l, ll r)
-	{
-		if(r < s || e < l)
-			return MIN;
-		
-		if(l <= s && e <= r)
-			return seg[no];
-		
-		return max(query(no * 2, s, (s + e) / 2, l, r), query(no * 2 + 1, (s + e) / 2 + 1, e, l, r));
-	}
-}segt;
-
-void f(ll s, ll e)
-{
-	if(s > e)
+	if(s2 > e2)
 		return;
 	
-	ll rt = b[segt.query(1, 1, n, s, e)];
+	cout << b[e2] sp;
 	
-	printf("%lld ", rt);
+	ll p = w[b[e2]];
+	ll L = p - s1;
 	
-	f(s, yuk[rt] - 1);
-	f(yuk[rt] + 1, e);
+	f(s1, p - 1, s2, s2 + L - 1);
+	f(p + 1, e1, s2 + L, e2 - 1);
 }
 
 int main(void)
 {
-	scanf("%lld", &n);
+	fastio
+	
+	cin >> n;
 	
 	for(ll i = 1 ; i <= n ; i++)
 	{
-		scanf("%lld", &a[i]);
-		yuk[a[i]] = i;
+		cin >> a[i];
+		w[a[i]] = i;
 	}
 	
 	for(ll i = 1 ; i <= n ; i++)
-	{
-		scanf("%lld", &b[i]);
-		w[b[i]] = i;
-	}
+		cin >> b[i];
 	
-	for(ll i = 1 ; i <= n ; i++)
-		segt.update(1, 1, n, i, w[a[i]]);
-	
-	f(1, n);
-	
+	f(1, n, 1, n);
 	return 0;
 }
