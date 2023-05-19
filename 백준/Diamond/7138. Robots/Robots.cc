@@ -187,6 +187,9 @@ int main(void)
 			ll x = (qq.se - 1) / w + 1;
 			ll y = (qq.se - 1) % w + 1;
 			
+            if(dist[i][x][y] < -qq.fi)
+                continue;
+            
 			for(auto &j : vec[qq.se])
 			{
 				ll nx = (j - 1) / w + 1;
