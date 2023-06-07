@@ -3,7 +3,7 @@
 using namespace std;
 typedef long long ll;
 typedef __int128 lll;
-typedef long double ld;
+typedef double ld;
 typedef pair<ll, ll> pll;
 typedef pair<ld, ld> pld;
 #define MAX 9223372036854775807LL
@@ -42,7 +42,7 @@ struct CHT
 	{
 		if(!siz)
 		{
-			lin[siz++] = {X, Y, -INF};
+			lin[siz++] = {X, Y, -1};
 			return;
 		}
 		
@@ -62,7 +62,7 @@ struct CHT
 		if(siz)
 			tmp.S = gyo(lin[siz - 1].A, lin[siz - 1].B, X, Y);
 		else
-			tmp.S = -INF;
+			tmp.S = -1;
 		
 		lin[siz++] = tmp;
 	}
