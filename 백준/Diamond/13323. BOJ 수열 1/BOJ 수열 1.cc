@@ -2,44 +2,48 @@
 
 using namespace std;
 typedef long long ll;
+typedef __int128 lll;
 typedef long double ld;
+typedef pair<ll, ll> pll;
+typedef pair<ld, ld> pld;
 #define MAX 9223372036854775807LL
 #define MIN -9223372036854775807LL
 #define INF 0x3f3f3f3f3f3f3f3f
 #define fi first
 #define se second
+#define fastio ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL); cout << fixed; cout.precision(10);
+#define sp << " "
+#define en << "\n"
+#define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
 ll n;
 ll a[1000010];
+ll U, R;
 priority_queue<ll> pq;
-ll ans, mv;
 
 int main(void)
 {
-	scanf("%lld", &n);
+	fastio
+	
+	cin >> n;
 	
 	for(ll i = 1 ; i <= n ; i++)
-		scanf("%lld", &a[i]);
+		cin >> a[i];
 	
 	pq.push(a[1]);
+	R = 1;
 	
 	for(ll i = 2 ; i <= n ; i++)
 	{
-		mv++;
+		if(a[i] < pq.top() + R)
+			U += pq.top() + R - a[i];
 		
-		ll qq = pq.top();
-		qq += mv;
-		
-		if(qq >= a[i])
-		{
-			pq.pop();
-			pq.push(a[i] - mv);
-			ans += qq - a[i];
-		}
-		
-		pq.push(a[i] - mv);
+		pq.push(a[i] - R);
+		pq.push(a[i] - R);
+		pq.pop();
+		R++;
 	}
 	
-	printf("%lld", ans);
+	cout << U;
 	return 0;
 }
