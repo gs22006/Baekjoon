@@ -17,7 +17,7 @@ typedef pair<ld, ld> pld;
 #define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
 ll n, m;
-pll a[1000010], b[1000010];
+pll a[500010], b[500010];
 vector<pll> A, B;
 ll ans;
 
