@@ -227,7 +227,7 @@ int main(void)
 				ll w = lenb - lens + SA[i] + 1;
 				ll H = h[w - 1];
 				ll R = min(w + L[w] - 2, L2[w - 1]);
-				ll R2 = min(w + LCP2[w] - 2, L2[w - 1]);
+				ll R2 = w + LCP2[w] - 2;
 				
 				ll idx1 = upper_bound(vec[H].begin(), vec[H].end(), w - 1) - vec[H].begin();
 				ll idx2 = upper_bound(vec[H].begin(), vec[H].end(), R) - vec[H].begin();
