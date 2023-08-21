@@ -73,7 +73,7 @@ int main(void)
 	for(ll i = 1 ; i <= n ; i++)
 	{
 		now[i] = -K;
-		segt.update(1, 1, n, i);
+		segt.update(1, 1, n - d, i);
 	}
 	
 	for(ll i = 1 ; i <= m ; i++)
@@ -81,7 +81,7 @@ int main(void)
 		cin >> all >> bll;
 		
 		now[all] += bll;
-		segt.update(1, 1, n, all);
+		segt.update(1, 1, n - d, all);
 		
 		if(segt.seg[1].gap - K * d > 0)
 			cout << "NIE\n";
