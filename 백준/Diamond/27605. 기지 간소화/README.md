@@ -4,11 +4,11 @@
 
 ### 성능 요약
 
-메모리: 132524 KB, 시간: 2072 ms
+메모리: 323960 KB, 시간: 444 ms
 
 ### 분류
 
-조합론(combinatorics), 자료 구조(data_structures), 깊이 우선 탐색(dfs), 그래프 이론(graphs), 그래프 탐색(graph_traversal), 수학(math), 작은 집합에서 큰 집합으로 합치는 테크닉(smaller_to_larger), 트리(trees), 트리를 사용한 집합과 맵(tree_set)
+조합론, 자료 구조, 수학, 작은 집합에서 큰 집합으로 합치는 테크닉, 트리, 트리를 사용한 집합과 맵
 
 ### 문제 설명
 

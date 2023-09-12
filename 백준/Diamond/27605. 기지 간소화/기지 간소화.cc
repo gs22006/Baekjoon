@@ -1,251 +1,178 @@
-#pragma GCC optimize ("Ofast")
-#pragma GCC target("sse,sse2,sse3,ssse3,sse4,avx,avx2")
 #include <bits/stdc++.h>
 
 using namespace std;
 typedef long long ll;
+typedef __int128 lll;
+typedef long double ld;
+typedef pair<ll, ll> pll;
+typedef pair<ld, ld> pld;
+#define MAX 9223372036854775807LL
+#define MIN -9223372036854775807LL
+#define INF 0x3f3f3f3f3f3f3f3f
 #define fi first
 #define se second
+#define fastio ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL); cout << fixed; cout.precision(10);
+#define sp << " "
+#define en << "\n"
+#define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
-ll ss = 1000000007;
 ll n;
-vector< pair<ll, ll> > vec[250010];
-ll IN[250010], OUT[250010];
-ll siz[250010];
-ll gap[250010], nu[250010];
-ll tp[250010];
-ll cc;
-ll deg[250010];
-ll spa[250010][21];
-ll dep[250010], dist1[250010];
-ll st;
+vector<pll> vec[2500010];
+set<ll> st[2500010];
+ll pa[2500010], ra[2500010], len[2500010];
+ll bun[2500010];
+ll gap[2500010];
 ll ans;
+ll ss = 1000000007;
 
-void dfs(ll here, ll pa)
+ll ffind(ll here)
 {
-	siz[here] = 1;
+	if(pa[here] == here)
+		return here;
 	
-	for(ll i = 0 ; i < (ll)vec[here].size() ; i++)
+	return pa[here] = ffind(pa[here]);
+}
+
+ll get_len(ll X)
+{
+	return len[ffind(X)];
+}
+
+void uunion(ll X, ll Y)
+{
+	X = ffind(X);
+	Y = ffind(Y);
+	
+	if(X == Y)
+		return;
+	
+	if(ra[X] < ra[Y])
 	{
-		ll nxt = vec[here][i].fi;
-		
-		if(nxt == pa)
-			continue;
-		
-		dfs(nxt, here);
-		siz[here] += siz[nxt];
-		
-		if(siz[vec[here][0].fi] < siz[vec[here][i].fi] || vec[here][0].fi == pa)
-			swap(vec[here][0], vec[here][i]);
+		pa[X] = Y;
+		len[Y] += len[X];
+	}
+	
+	else if(ra[X] > ra[Y])
+	{
+		pa[Y] = X;
+		len[X] += len[Y];
+	}
+	
+	else
+	{
+		ra[Y]++;
+		pa[X] = Y;
+		len[Y] += len[X];
 	}
 }
 
-void dfs2(ll here, ll pa)
+void IN(ll w, ll X)
 {
-	IN[here] = ++cc;
-	spa[here][0] = pa;
+	auto p1 = st[w].lower_bound(X);
+	auto p2 = st[w].upper_bound(X);
+	ll L = 0, R = 0;
+	
+	if(p1 == st[w].begin())
+		L = 0;
+	
+	else
+	{
+		p1--;
+		L = (*p1);
+	}
+	
+	if(p2 == st[w].end())
+		R = n + 1;
+	else
+		R = (*p2);
+	
+	gap[w] -= (R - L - 1) * (R - L) / 2;
+	gap[w] += (X - L - 1) * (X - L) / 2;
+	gap[w] += (R - X - 1) * (R - X) / 2;
+	gap[w]++;
+	
+	if(st[w].find(X - 1) != st[w].end())
+	{
+		ll len1 = get_len(X - 1);
+		ll len2 = get_len(X);
+		
+		gap[w] -= (len1 + 1) * len1 / 2;
+		gap[w] -= (len2 + 1) * len2 / 2;
+		
+		uunion(X - 1, X);
+		len1 = get_len(X);
+		
+		gap[w] += (len1 + 1) * len1 / 2;
+	}
+	
+	if(st[w].find(X + 1) != st[w].end())
+	{
+		ll len1 = get_len(X + 1);
+		ll len2 = get_len(X);
+		
+		gap[w] -= (len1 + 1) * len1 / 2;
+		gap[w] -= (len2 + 1) * len2 / 2;
+		
+		uunion(X + 1, X);
+		len1 = get_len(X);
+		
+		gap[w] += (len1 + 1) * len1 / 2;
+	}
+	
+	st[w].insert(X);
+}
+
+void dfs(ll here, ll p, ll LEN)
+{
+	ll chld = 0;
 	
 	for(auto &i : vec[here])
 	{
-		if(i.fi == pa)
+		if(i.fi == p)
 			continue;
 		
-		if(i == vec[here][0])
-			tp[i.fi] = tp[here];
-		else
-			tp[i.fi] = i.fi;
-		
-		dep[i.fi] = dep[here] + 1;
-		dist1[i.fi] = (dist1[here] + i.se) % ss;
-		dfs2(i.fi, here);
-		gap[IN[i.fi] - 1] = i.se;
+		dfs(i.fi, here, i.se);
+		chld++;
 	}
 	
-	OUT[here] = cc;
-}
-
-struct node
-{
-	ll minn, sminn, sum, mcnt;
-};
-
-struct segtree
-{
-	node seg[1000010];
-	
-	void init(ll no, ll s, ll e)
+	if(!chld)
 	{
-		if(s == e)
-		{
-			seg[no].minn = 0;
-			seg[no].sminn = (1LL << 50);
-			seg[no].sum = 0;
-			seg[no].mcnt = gap[s];
-			
-			return;
-		}
+		bun[here] = here;
+		gap[here] = n * (n + 1) / 2;
+		IN(here, here);
+		ans = ((n * (n + 1) / 2 - gap[here]) % ss * LEN % ss + ans) % ss;
 		
-		init(no << 1, s, (s + e) >> 1);
-		init(no << 1 | 1, ((s + e) >> 1) + 1, e);
-		
-		seg[no].mcnt = (seg[no << 1].mcnt + seg[no << 1 | 1].mcnt) % ss;
+		return;
 	}
 	
-	void prop(ll no, ll s, ll e)
+	ll maxx = 0, w = -1;
+	
+	for(auto &i : vec[here])
 	{
-		if(s == e)
-			return;
+		if(i.fi == p)
+			continue;
 		
-		if(seg[no << 1].minn < seg[no].minn)
+		if((ll)st[bun[i.fi]].size() > maxx)
 		{
-			seg[no << 1].sum = (seg[no << 1].sum + (seg[no].minn - seg[no << 1].minn) * seg[no << 1].mcnt % ss) % ss;
-			seg[no << 1].minn = seg[no].minn;
-		}
-		
-		if(seg[no << 1 | 1].minn < seg[no].minn)
-		{
-			seg[no << 1 | 1].sum = (seg[no << 1 | 1].sum + (seg[no].minn - seg[no << 1 | 1].minn) * seg[no << 1 | 1].mcnt % ss) % ss;
-			seg[no << 1 | 1].minn = seg[no].minn;
+			maxx = (ll)st[bun[i.fi]].size();
+			w = i.fi;
 		}
 	}
 	
-	void update(ll no, ll s, ll e, ll l, ll r, ll v)
+	bun[here] = bun[w];
+	
+	for(auto &i : vec[here])
 	{
-		prop(no, s, e);
+		if(i.fi == p || i.fi == w)
+			continue;
 		
-		if(e < l || r < s || v <= seg[no].minn)
-			return;
-		
-		if(l <= s && e <= r && v < seg[no].sminn)
-		{
-			seg[no].sum = (seg[no].sum + (v - seg[no].minn) * seg[no].mcnt % ss) % ss;
-			seg[no].minn = v;
-			prop(no, s, e);
-			
-			return;
-		}
-		
-		update(no << 1, s, (s + e) >> 1, l, r, v);
-		update(no << 1 | 1, ((s + e) >> 1) + 1, e, l, r, v);
-		
-		if(s == e)
-			return; //??
-		
-		if(seg[no << 1].minn == seg[no << 1 | 1].minn)
-		{
-			seg[no].minn = seg[no << 1].minn;
-			seg[no].mcnt = (seg[no << 1].mcnt + seg[no << 1 | 1].mcnt) % ss;
-			seg[no].sminn = min(seg[no << 1].sminn, seg[no << 1 | 1].sminn);
-		}
-		
-		else if(seg[no << 1].minn < seg[no << 1 | 1].minn)
-		{
-			seg[no].minn = seg[no << 1].minn;
-			seg[no].mcnt = seg[no << 1].mcnt;
-			seg[no].sminn = min(seg[no << 1].sminn, seg[no << 1 | 1].minn);
-		}
-		
-		else if(seg[no << 1].minn > seg[no << 1 | 1].minn)
-		{
-			seg[no].minn = seg[no << 1 | 1].minn;
-			seg[no].mcnt = seg[no << 1 | 1].mcnt;
-			seg[no].sminn = min(seg[no << 1 | 1].sminn, seg[no << 1].minn);
-		}
-		
-		seg[no].sum = (seg[no << 1].sum + seg[no << 1 | 1].sum) % ss;
+		for(auto &j : st[bun[i.fi]])
+			IN(bun[here], j);
 	}
 	
-	ll query(ll no, ll s, ll e, ll l, ll r)
-	{
-		prop(no, s, e);
-		
-		if(e < l || r < s)
-			return 0;
-		
-		if(l <= s && e <= r)
-			return seg[no].sum;
-		
-		ll LL = query(no << 1, s, (s + e) >> 1, l, r);
-		ll RR = query(no << 1 | 1, ((s + e) >> 1) + 1, e, l, r);
-		
-		return (LL + RR) % ss;
-	}
-}segt;
-
-ll LCA(ll X, ll Y)
-{
-	if(dep[X] < dep[Y])
-		swap(X, Y);
+	IN(bun[here], here);
 	
-	ll cha = dep[X] - dep[Y];
-	
-	for(ll i = 20 ; i >= 0 ; i--)
-	{
-		if((1LL << i) <= cha)
-		{
-			cha -= (1LL << i);
-			X = spa[X][i];
-		}
-	}
-	
-	if(X == Y)
-		return X;
-	
-	for(ll i = 20 ; i >= 0 ; i--)
-	{
-		if(spa[X][i] != spa[Y][i])
-		{
-			X = spa[X][i];
-			Y = spa[Y][i];
-		}
-	}
-	
-	return spa[X][0];
-}
-
-ll dist(ll X, ll Y)
-{
-	return (dist1[X] + dist1[Y] - dist1[LCA(X, Y)] * 2 % ss) % ss;
-}
-
-void update1(ll X, ll Y, ll v)
-{
-	while(tp[X] != tp[Y])
-	{
-		if(dep[tp[X]] < dep[tp[Y]])
-			swap(X, Y);
-		
-		segt.update(1, 1, cc - 1, max(1LL, IN[tp[X]] - 1), IN[X] - 1, v);
-		X = spa[tp[X]][0];
-	}
-	
-	if(dep[X] < dep[Y])
-		swap(X, Y);
-	
-	if(IN[Y] <= IN[X] - 1)
-		segt.update(1, 1, cc - 1, IN[Y], IN[X] - 1, v);
-}
-
-ll query1(ll X, ll Y)
-{
-	ll ret = 0;
-	
-	while(tp[X] != tp[Y])
-	{
-		if(dep[tp[X]] < dep[tp[Y]])
-			swap(X, Y);
-		
-		ret = (ret + segt.query(1, 1, cc - 1, max(1LL, IN[tp[X]] - 1), IN[X] - 1)) % ss;
-		X = spa[tp[X]][0];
-	}
-	
-	if(dep[X] < dep[Y])
-		swap(X, Y);
-	
-	if(IN[Y] <= IN[X] - 1)
-		ret = (ret + segt.query(1, 1, cc - 1, IN[Y], IN[X] - 1)) % ss;
-	
-	return ret;
+	ans = ((n * (n + 1) / 2 - gap[bun[here]]) % ss * LEN % ss + ans) % ss;
 }
 
 int maintenance_costs_sum(vector<int> U, vector<int> V, vector<int> W)
@@ -254,39 +181,20 @@ int maintenance_costs_sum(vector<int> U, vector<int> V, vector<int> W)
 	
 	for(ll i = 0 ; i < n - 1 ; i++)
 	{
-		U[i]++, V[i]++;
-		
-		vec[U[i]].push_back({V[i], W[i]});
-		vec[V[i]].push_back({U[i], W[i]});
+		vec[U[i] + 1].push_back({V[i] + 1, W[i]});
+		vec[V[i] + 1].push_back({U[i] + 1, W[i]});
 	}
 	
-	dfs(1, -1);
-	tp[1] = 1;
-	dfs2(1, -1);
-	
-	for(ll i = 1 ; i <= cc ; i++)
-		nu[i] = (nu[i - 1] + gap[i]) % ss;
-	
-	for(ll i = 1 ; i <= 20 ; i++)
+	for(ll i = 1 ; i <= n ; i++)
 	{
-		for(ll j = 1 ; j <= n ; j++)
-			spa[j][i] = spa[spa[j][i - 1]][i - 1];
+		pa[i] = i;
+		len[i] = 1;
+		ra[i] = 0;
 	}
 	
-	segt.init(1, 1, cc - 1);
+	dfs(1, 0, 0);
 	
-	for(ll i = 2 ; i <= n ; i++)
-	{
-		ll S = i - 1;
-		ll E = i;
-		
-		ll gye = dist(S, E) * (i - 1) % ss;
-		gye = (gye - query1(S, E)) % ss;
-		
-		ans = (ans + gye * (n - i + 1) % ss) % ss;
-		update1(S, E, i - 1);
-	}
+	ans = (ans % ss + ss) % ss;
 	
-	ans = ans % ss < 0 ? ans % ss + ss : ans % ss;
 	return (int)ans;
 }
