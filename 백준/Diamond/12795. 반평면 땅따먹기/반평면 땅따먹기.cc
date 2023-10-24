@@ -2,109 +2,127 @@
 
 using namespace std;
 typedef long long ll;
-typedef double ld;
+typedef __int128 lll;
+typedef long double ld;
+typedef pair<ll, ll> pll;
+typedef pair<ld, ld> pld;
+#define MAX 9223372036854775807LL
+#define MIN -9223372036854775807LL
+#define INF 0x3f3f3f3f3f3f3f3f
+#define fi first
+#define se second
+#define fastio ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL); cout << fixed; cout.precision(10);
+#define sp << " "
+#define en << "\n"
+#define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
-struct Li_Chao
+ll q;
+ll all, bll;
+
+struct node
 {
-	ll getx(pair<ll, ll> L, ll x)
-	{
-		return L.first * x + L.second;
-	}
-	
-	struct node
-	{
-		ll lnode, rnode;
-		ll xl, xr;
-		pair<ll, ll> line;
-	};
-	
-	vector<node> tree;
-	
-	void init(ll xmin, ll xmax)
-	{
-		tree.push_back({-1, -1, xmin, xmax, {0, -1000000000000000000}});
-	}
-	
-	void update(ll N, pair<ll, ll> lin)
-	{
-		ll xl = tree[N].xl;
-		ll xr = tree[N].xr;
-		ll xm = (xl + xr) >> 1;
-		pair<ll, ll> Llow = tree[N].line;
-		pair<ll, ll> Lhigh = lin;
-		
-		if(getx(Llow, xl) >= getx(Lhigh, xl))
-			swap(Llow, Lhigh);
-			
-		if(getx(Llow, xr) <= getx(Lhigh, xr))
-			tree[N].line = Lhigh;
-		
-		else if(getx(Llow, xm) <= getx(Lhigh, xm))
-		{
-			tree[N].line = Lhigh;
-			
-			if(tree[N].rnode == -1)
-			{
-				tree[N].rnode = tree.size();
-				tree.push_back({-1, -1, xm + 1, xr, {0, -1000000000000000000}});
-			}
-			
-			update(tree[N].rnode, Llow);
-		}
-		
-		else
-		{
-			tree[N].line = Llow;
-			
-			if(tree[N].lnode == -1)
-			{
-				tree[N].lnode = tree.size();
-				tree.push_back({-1, -1, xl, xm, {0, -1000000000000000000}});
-			}
-			
-			update(tree[N].lnode, Lhigh);
-		}
-	}
-	
-	ll query(ll N, ll xq)
-	{
-		if(N == -1)
-			return -1000000000000000000;
-		
-		ll xl = tree[N].xl;
-		ll xr = tree[N].xr;
-		ll xm = (xl + xr) >> 1;
-		
-		if(xq <= xm)
-			return max(getx(tree[N].line, xq), query(tree[N].lnode, xq));
-		else
-			return max(getx(tree[N].line, xq), query(tree[N].rnode, xq));
-	}
-}lichao;
+	ll L, R;
+	pll line;
+};
 
-ll t;
-ll all, bll, cll;
+ll Y(pll L, ll X)
+{
+	return L.fi * X + L.se;
+}
+
+struct lichaotree
+{
+	vector<node> seg;
+	
+	void init(void)
+	{
+		seg.push_back({-1, -1, {0, -INF}});
+	}
+	
+	void update(ll no, ll s, ll e, pll L)
+	{
+		ll mid = (s + e) >> 1;
+		pll line1 = seg[no].line;
+		pll line2 = L;
+		
+		if(Y(line1, s) > Y(line2, s))
+			swap(line1, line2);
+		
+		if(Y(line1, e) <= Y(line2, e))
+		{
+			seg[no].line = line2;
+			return;
+		}
+		
+		if(Y(line1, mid) < Y(line2, mid))
+		{
+			seg[no].line = line2;
+			
+			if(seg[no].R == -1)
+			{
+				seg[no].R = (ll)seg.size();
+				seg.push_back({-1, -1, {0, -INF}});
+			}
+			
+			update(seg[no].R, mid + 1, e, line1);
+		}
+		
+		else
+		{
+			seg[no].line = line1;
+			
+			if(seg[no].L == -1)
+			{
+				seg[no].L = (ll)seg.size();
+				seg.push_back({-1, -1, {0, -INF}});
+			}
+			
+			update(seg[no].L, s, mid, line2);
+		}
+	}
+	
+	ll query(ll no, ll s, ll e, ll w)
+	{
+		if(e < w || w < s)
+			return -INF;
+		
+		if(s == e)
+			return Y(seg[no].line, w);
+		
+		ll ret = Y(seg[no].line, w);
+		
+		if(seg[no].L != -1)
+			ret = max(ret, query(seg[no].L, s, (s + e) >> 1, w));
+		
+		if(seg[no].R != -1)
+			ret = max(ret, query(seg[no].R, ((s + e) >> 1) + 1, e, w));
+		
+		return ret;
+	}
+}segt;
 
 int main(void)
 {
-	lichao.init(-2000000000000, 2000000000000);
+	fastio
 	
-	scanf("%lld", &t);
+	segt.init();
 	
-	while(t--)
+	cin >> q;
+	
+	while(q--)
 	{
-		scanf("%lld", &all);
+		cin >> all;
 		
 		if(all == 1)
 		{
-			scanf("%lld %lld", &bll, &cll);
-			lichao.update(0, {bll, cll});
+			cin >> all >> bll;
+			segt.update(0, -1000000000000, 1000000000000, {all, bll});
 		}
 		
-		else if(all == 2)
+		else
 		{
-			scanf("%lld", &bll);
-			printf("%lld\n", lichao.query(0, bll));
+			cin >> all;
+			cout << segt.query(0, -1000000000000, 1000000000000, all) en;
 		}
 	}
 	
