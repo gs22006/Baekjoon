@@ -5,6 +5,7 @@ typedef long long ll;
 typedef __int128 lll;
 typedef long double ld;
 typedef pair<ll, ll> pll;
+typedef pair<ld, ld> pld;
 #define MAX 9223372036854775807LL
 #define MIN -9223372036854775807LL
 #define INF 0x3f3f3f3f3f3f3f3f
@@ -18,7 +19,7 @@ typedef pair<ll, ll> pll;
 ll n, m;
 ll all, bll;
 vector<ll> vec[2010];
-ll ltr[2010], rtl[2010];
+ll rtl[2010];
 ll chk[2010];
 ll ans;
 
@@ -30,7 +31,6 @@ ll dfs(ll here)
 	{
 		if(rtl[i] == -1 || (!chk[rtl[i]] && dfs(rtl[i])))
 		{
-			ltr[here] = i;
 			rtl[i] = here;
 			return 1;
 		}
@@ -56,21 +56,15 @@ int main(void)
 		}
 	}
 	
-	for(ll i = 1 ; i <= n ; i++)
-		ltr[i] = -1;
-	
 	for(ll i = 1 ; i <= m ; i++)
 		rtl[i] = -1;
 	
 	for(ll i = 1 ; i <= n ; i++)
 	{
-		if(ltr[i] == -1)
-		{
-			for(ll j = 1 ; j <= n ; j++)
-				chk[j] = 0;
-			
-			ans += dfs(i);
-		}
+		for(ll j = 1 ; j <= n ; j++)
+			chk[j] = 0;
+		
+		ans += dfs(i);
 	}
 	
 	cout << ans;
