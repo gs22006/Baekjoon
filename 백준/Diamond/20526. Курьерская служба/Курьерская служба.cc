@@ -1,32 +1,32 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-typedef long long ll;
+typedef int ll;
 typedef pair<ll, ll> pll;
 #define fi first
 #define se second
 #define compress(v) sort(v.begin(), v.end()), v.erase(unique(v.begin(), v.end()), v.end())
 
 ll n, K;
-vector<ll> vec[500010], vec3[500010];
-vector<pll> vv2[500010];
-vector<pll> LR[500010];
-ll bun[500010];
-multiset<ll> ST[500010];
-map<ll, pll> MP[500010];
-ll BUN[500010];
-ll s[500010], e[500010];
-ll dep[500010];
-ll spa[500010][21];
-ll tp[500010];
-ll ETT[500010];
+vector<ll> vec[1000010], vec3[1000010];
+vector<pll> vv2[1000010];
+vector<pll> LR[1000010];
+ll bun[1000010];
+multiset<ll> ST[1000010];
+map<ll, pll> MP[1000010];
+ll BUN[1000010];
+ll s[1000010], e[1000010];
+ll dep[1000010];
+ll spa[1000010][21];
+ll tp[1000010];
+ll ETT[1000010];
 ll cc;
-ll lf[500010], rg[500010];
+ll lf[1000010], rg[1000010];
 ll ans, ans2, ans3 = 1;
 
 struct segtree
 {
-	ll seg[2000010];
+	ll seg[4000010];
 	
 	void update(ll no, ll s, ll e, ll w, ll v)
 	{
@@ -51,7 +51,7 @@ struct segtree
 			assert(0);
 		
 		if(e < l || r < s)
-			return (1LL << 60);
+			return (1LL << 29);
 		
 		if(l <= s && e <= r)
 			return seg[no];
@@ -534,7 +534,7 @@ void ans22(void)
 		}
 		
 		stack<ll> stk;
-		ll mini = (1LL << 60), rtrt = 0;
+		ll mini = (1LL << 29), rtrt = 0;
 		
 		for(auto &i : vtx)
 		{
@@ -620,18 +620,18 @@ ll tmtm;
 
 int main()
 {
-	scanf("%lld %lld", &n, &K);
+	scanf("%d %d", &n, &K);
 	
 	for(ll i = 2 ; i <= n ; i++)
 	{
-		scanf("%lld", &tmtm);
+		scanf("%d", &tmtm);
 		
 		vec[i].push_back(tmtm);
 		vec[tmtm].push_back(i);
 	}
 	
 	for(ll i = 1 ; i <= K ; i++)
-		scanf("%lld %lld", &s[i], &e[i]);
+		scanf("%d %d", &s[i], &e[i]);
 	
 	std::vector<int> ans = post();
 
