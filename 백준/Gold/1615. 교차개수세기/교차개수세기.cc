@@ -23,34 +23,60 @@ ll ans;
 
 struct segtree
 {
+	ll K;
 	ll seg[1000010];
 	
-	void update(ll no, ll s, ll e, ll w, ll v)
+	void init(ll siz)
 	{
-		if(e < w || w < s)
-			return;
+		K = 1;
 		
-		if(s == e)
-		{
-			seg[no] += v;
-			return;
-		}
-		
-		update(no << 1, s, (s + e) >> 1, w, v);
-		update(no << 1 | 1, ((s + e) >> 1) + 1, e, w, v);
-		
-		seg[no] = seg[no << 1] + seg[no << 1 | 1];
+		while(K <= siz)
+			K *= 2;
 	}
 	
-	ll query(ll no, ll s, ll e, ll l, ll r)
+	void update(ll w, ll v)
 	{
-		if(e < l || r < s)
-			return 0;
+		w += K;
 		
-		if(l <= s && e <= r)
-			return seg[no];
+		while(w)
+		{
+			seg[w] += v;
+			w >>= 1;
+		}
+	}
+	
+	ll query(ll l, ll r)
+	{
+		ll ret = 0;
 		
-		return query(no << 1, s, (s + e) >> 1, l, r) + query(no << 1 | 1, ((s + e) >> 1) + 1, e, l, r);
+		l += K;
+		r += K;
+		
+		while(l <= r)
+		{
+			if(l == r)
+			{
+				ret += seg[l];
+				break;
+			}
+			
+			if(l & 1)
+			{
+				ret += seg[l];
+				l++;
+			}
+			
+			if(!(r & 1))
+			{
+				ret += seg[r];
+				r--;
+			}
+			
+			l >>= 1;
+			r >>= 1;
+		}
+		
+		return ret;
 	}
 }segt;
 
@@ -66,13 +92,15 @@ int main(void)
 		edg[all].push_back(bll);
 	}
 	
+	segt.init(n + 10);
+	
 	for(ll i = 1 ; i <= n ; i++)
 	{
 		for(auto &j : edg[i])
-			ans += segt.query(1, 1, n, j + 1, n);
+			ans += segt.query(j + 1, n);
 		
 		for(auto &j : edg[i])
-			segt.update(1, 1, n, j, 1);
+			segt.update(j, 1);
 	}
 	
 	cout << ans;
