@@ -43,14 +43,7 @@ void dfs(ll here, ll pa)
 			continue;
 		
 		num[i] = num[pa] + chu[pa] - chu[i];
-	}
-	
-	for(auto &i : vec[here])
-	{
-		if(i == pa)
-			continue;
-		
-		dfs(i, here);
+        dfs(i, here);
 	}
 }
 
